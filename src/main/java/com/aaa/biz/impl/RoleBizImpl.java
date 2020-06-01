@@ -2,10 +2,13 @@ package com.aaa.biz.impl;
 
 import com.aaa.biz.RoleBiz;
 import com.aaa.dao.RoleMapper;
+import com.aaa.dao.RoleMenuMapper;
+import com.aaa.entity.LayUiTree;
 import com.aaa.entity.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +20,9 @@ import java.util.List;
 public class RoleBizImpl implements RoleBiz {
     @Autowired
     private RoleMapper roleMapper;
+    @Autowired
+    private RoleMenuMapper roleMenuMapper;
+    List idlist;
     @Override
     public List<Role> selectAllRole() {
         return roleMapper.selectAllRole();
@@ -56,5 +62,38 @@ public class RoleBizImpl implements RoleBiz {
     public Role selectByName(String roleName,int roleId){
         return roleMapper.selectByName(roleName,roleId);
     }
-    public int insertMenu(int roleId,int menuId){return roleMapper.insertMenu(roleId,menuId);}
+    public List<Role> selectRoles()
+    {
+        return roleMapper.selectRoles();
+    }
+
+    public String setAuthorityByKey(List<LayUiTree> authorityTree, String roleKey)
+    {
+        Role role=roleMapper.selectByRoleKey(roleKey);
+        return setAuthorityById(authorityTree,role.getRoleId());
+    }
+
+    public String setAuthorityById(List<LayUiTree> authorityTree, Integer roleId)
+    {
+        List<Integer> menuIdList=parsingAuthorityTrees(authorityTree);
+        for(Integer menuId:menuIdList)
+        {
+            int k=roleMenuMapper.insertMenuId(roleId,menuId);
+            if(k<=0)
+                return "error";
+        }
+        return "success";
+    }
+
+
+    public List parsingAuthorityTrees(List<LayUiTree> authorityTree)
+    {
+        for (LayUiTree layuiTree: authorityTree) {
+            idlist.add(layuiTree.getId());
+            if(layuiTree.getChildren()!=null)
+                parsingAuthorityTrees(layuiTree.getChildren());
+        }
+        return idlist;
+    }
+
 }

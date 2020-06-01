@@ -73,26 +73,23 @@
         </div>
     </div>
     <div class="layui-form-item">
-        <div id="test12" class="demo-tree-more" style="margin-left: 40px"></div>
-        <div class="layui-input-block">
-            <fieldset class="layui-elem-field layui-field-title" style="margin-top: 30px;">
-            </fieldset>
-        </div>
-    </div>
-    </div>
-    <div class="layui-form-item">
         <label class="layui-form-label">状&nbsp;&nbsp;&nbsp;&nbsp;态</label>
         <div class="layui-input-block">
             <input type="checkbox" name="status" id="switch" lay-skin="switch" lay-filter="sfzs" lay-text="正常|停用" checked>
         </div>
     </div>
+    <!--权限框-->
+    <div class="layui-form-item">
+        <label class="layui-form-label">权&nbsp;&nbsp;&nbsp;&nbsp;限：</label>
+    </div>
+    <div id="test12" class="demo-tree-more" style="margin-left: 10%;margin-bottom: 2%"></div>
+
     <div class="layui-form-item">
         <div class="layui-input-block">
             <button type="button"  	class="layui-btn layui-btn-normal" lay-submit lay-filter="saveRoleForm">保存</button>
             <button type="reset"  	class="layui-btn layui-btn-warm">重置</button>
         </div>
     </div>
-
 </form>
 <!--渲染编辑表单-->
 <form class="layui-form" action="" id="roleEditForm" style="display: none">
@@ -121,73 +118,46 @@
             <button type="reset"  	class="layui-btn layui-btn-warm">重置</button>
         </div>
     </div>
+
 </form>
 </body>
 <script>
-    var form=layui.form;
-    var table=layui.table;
-    $=layui.jquery;
-    form.render();//渲染表单
-
+    <!--权限-->
     layui.use(['tree', 'util'], function() {
         var tree = layui.tree
-            ,layer = layui.layer
-            ,util = layui.util
-
+            , layer = layui.layer
         $.ajax({
             url: 'selectAllMenu',//地址
             dataType: 'json',//数据类型
             type: 'GET',//类型
             //请求成功
             success: function (result) {
-                console.log(result);
                 //基本演示
                 tree.render({
                     elem: '#test12'
-                    ,data: result
-                    ,showCheckbox: true  //是否显示复选框
-                    ,id: 'roleId1'
-                    ,isJump: true //是否允许点击节点时弹出新窗口跳转
-                    ,click: function(obj){
+                    , data: result
+                    , showCheckbox: true  //是否显示复选框
+                    , id: 'demoId1'
+                    /*, click: function (obj) {
                         var data = obj.data;  //获取当前点击的节点数据
-                        layer.msg('状态：'+ obj.state + '<br>节点数据：' + JSON.stringify(data));
-                    }
+                        layer.msg('状态：' + obj.state + '<br>节点数据：' + JSON.stringify(data));
+                    }*/
                 });
             }
         });
-        // var tree = layui.tree
-        //         , layer = layui.layer
-        //         , util = layui.util
-        //         ,data2 = [{
-        //     title: '菜单选择'
-        //     ,id: 1
-        //     ,children: [{
-        //         title: '油条'
-        //         ,id: 5
-        //     },{
-        //         title: '包子'
-        //         ,id: 6
-        //     },{
-        //         title: '豆浆'
-        //         ,id: 7
-        //     }]
-        // }];
-        // tree.render({
-        //     elem: '#test5'
-        //     , data: data2
-        //     , isJump: true  //link 为参数匹配
-        //     ,showCheckbox: true  //是否显示复选框
-        //     ,click: function(obj){
-        //         var data = obj.data;  //获取当前点击的节点数据
-        //         layer.msg('状态：'+ obj.state + '<br>节点数据：' + JSON.stringify(data));
-        //     }
-        // });
     });
+
+    var form=layui.form;
+    var table=layui.table;
+    $=layui.jquery;
+    var tree=layui.tree;
+    form.render();//渲染表单
     //第一个实例
     var myTable= table.render({
         elem: '#demo'
         ,height: 350
-        ,url: 'showRole' //数据接口
+        ,url: 'toshow' //数据接口
+        ,id:'testReload'
         ,toolbar: '#mytoolbar' //开启工具栏，此处显示默认图标，可以自定义模板，详见文档
         ,cols: [
             [ //表头
@@ -203,8 +173,6 @@
                 ,{ title: '操作', width:200, toolbar: '#barDemo'}
             ]]
     });
-
-
     //监听头工具栏事件
     table.on('toolbar(test)', function(obj){
         var checkStatus = table.checkStatus(obj.config.id)
@@ -217,8 +185,8 @@
                         type: 1,
                         content: $("#roleSaveForm"),
                         icon: 1,
-                        title:"添加用户",
-                        area: ['500px', '400px']
+                        title:"添加角色",
+                        area: ['450px', '200px']
                     }
                 )
                 break;
@@ -226,12 +194,11 @@
                 if(data.length === 0){
                     layer.msg('请选择一行');
                 } else {
-                    console.log(data);
+                    console.log(data)
                     layer.confirm('确定要删除吗?', function(index){
                         for(var i=0;i<data.length;i++){
                             ids.push(data[i].roleId);
                         }
-
                         $.ajax({
                             url: 'delRole',//地址
                             dataType: 'json',//数据类型
@@ -245,8 +212,10 @@
                                     //显示删除成功消息
                                     layer.msg(result.message,{icon:1})
                                     //重新加载数据表格
-                                    myTable.reload();
-                                    window.location.reload();
+                                    myTable.reload('testReload',{
+                                        method: 'post',
+                                        url:'toshow'
+                                    })
                                 }else
                                 {
                                     //关闭弹出层
@@ -267,18 +236,28 @@
         //数据的提交，ajax方式
         if(data.field.status=="on"){data.field.status=0}
         else {data.field.status=1}
-        console.log(data);
-        var ids=[];
+        console.log(data.field);
         $.ajax({
             url: 'saveRole',//地址
             dataType: 'json',//数据类型
             type: 'POST',//类型
             data:data.field,
-            data:{ids:JSON.stringify(ids)},
             //请求成功
             success: function (result) {
-                console.log(result);
                 if(result.code==0){
+                    var checkedData=tree.getChecked('demoId1');
+                    $.ajax({
+                        type:"post",
+                        url:"setAuthorityByKey"+"/"+data.field.roleKey,
+                        dataType:"json",
+                        data:"parms="+JSON.stringify(checkedData),
+                        success:function(data){
+                            layer.msg(data);
+                        },
+                        error:function (data) {
+                            layer.msg(data);
+                        }
+                    });
                     //关闭弹出层
                     layer.closeAll();
                     //显示添加成功消息
@@ -300,7 +279,7 @@
                     layer.msg(result.message,{icon:5});
                     $("#roleName1").val(data.field.roleName);
                 }
-            },
+            }
         });
         return false;
     });

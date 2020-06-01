@@ -28,7 +28,10 @@
     SELECT * FROM tbl_role ORDER BY role_id DESC LIMIT 1;
   </select>
   <select id="selectAllRole" resultMap="BaseResultMap">
-         select * from tbl_role where del_flag =0
+      select * from tbl_role
+    </select>
+  <select id="selectRoles" resultMap="BaseResultMap">
+      select * from tbl_role where del_flag=0
     </select>
   <select id="selectByRoleName" resultMap="BaseResultMap">
       select * from tbl_role where role_name=#{roleName,jdbcType=VARCHAR}
@@ -128,9 +131,6 @@
         #{remark,jdbcType=VARCHAR},
       </if>
     </trim>
-  </insert>
-  <insert id="insertMenu">
-    insert into tbl_role_menu (role_id,menu_id) values (#{role_id},#{menu_id});
   </insert>
   <update id="SoftdelRoleByID" parameterType="java.lang.Integer">
     update  tbl_role

@@ -35,5 +35,6 @@ public interface RoleMapper {
     int SoftdelRoleByID(@Param("ids") List<String> ids);
 
     Role selectLast();
+    List<Role> selectRoles();
     int insertMenu(int roleId,int menuId);
 }
